@@ -12,7 +12,6 @@ endef
 
 src = $(addprefix src/,\
   main.cpp \
-  eadk_vars.cpp \
 )
 
 CPPFLAGS = -std=c++11 -fno-exceptions
