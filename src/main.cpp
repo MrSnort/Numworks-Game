@@ -4,14 +4,15 @@
 #include <stdbool.h>
 #include <memory.h>
 
-
 //the function to push a part of the tilemap to a specific location in the framebuffer
 //x,y coordinate in the framebuffer
 //x2,y2 coordinate in the tilemap
 //w,h width and height of part of tilemap to draw
-void PushFramebuffer(uint16_t *fb,uint16_t x, uint16_t y,uint16_t x2,uint16_t y2,uint16_t w,uint16_t h){
-    for (int i = 0; i < /*240-y-*/h; i++){ //add part of the tilemap to framebuffer horizontal line by horizontal line up to bottom
-        memcpy(&fb[(y+i)*320+x] ,&tilemap[(i+y2)*144+x2],(w)*2); //320 is the width of the screen and 144 the width of the tilemap
+//TODO : maybe do calculus one time not every loop
+inline void PushFramebuffer(uint16_t *fb,uint16_t x, uint16_t y,uint16_t x2,uint16_t y2,uint16_t w,uint16_t h){
+    const uint16_t sizeofline = w*2; //unint16 takes two bytes
+    for (uint16_t i = 0; i < h; i++){ //add part of the tilemap to framebuffer horizontal line by horizontal line up to bottom
+        memcpy(&fb[(y+i)*320+x] ,&tilemap[(i+y2)*144+x2],sizeofline); //320 is the width of the screen and 144 the width of the tilemap
     }
 }
 
