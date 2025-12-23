@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <memory.h>
+#include <algorithm>
 
 //the function to push a part of the tilemap to a specific location in the framebuffer
 //x,y coordinate in the framebuffer
@@ -26,51 +27,45 @@ int main(int argc, char *argv[])
     uint16_t x = 0; //player coordinate
     uint16_t y = 0; //player coordinate
     eadk_color_t framebuffer[320*240] = {0x07E0};
-    uint64_t map[10][10] = {
-        {1,1,1,1,1,1,1,1,1,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,1},
-        {1,1,1,1,1,1,1,1,1,1}
+    uint8_t map2[6][6] = {
+        //side wall left,left begin of the wall,2x2 core wall,right end of the wall,side wall right
+        {1,2,47,48,3,4},
+        {10,11,56,57,12,13},
+        {37,20,65,66,21,40},
+        {10,29,76,76,30,13}, //29 left corner brick,76 the middle,30 right
+        {37,50,5,5,45,40},
+        {46,3,48,47,2,49}
     };
 
     //game loop
     while (running)
     {
+        //home button
         EADK::Keyboard::State kbdState = EADK::Keyboard::scan();
         running = !kbdState.keyDown(EADK::Keyboard::Key::Home);
 
         //clear framebuffer
-        memset(framebuffer,0x2945,sizeof(framebuffer));
-
+        std::fill_n(framebuffer,sizeof(framebuffer)/2,0x3165);
+        
         //draw map
-        for(uint16_t i = 0;i < 10;i++){
-            for(uint16_t j =0;j < 10;j++){
-                if (map[i][j] == 1){
-                    PushFramebuffer(framebuffer,i*16,j*16,32,16,16,16); // 1 = wall
-                }
-                else{
-                    PushFramebuffer(framebuffer,i*16,j*16,80,0,16,16); // 0 = ground
-                }
+        for (uint8_t i = 0;i < 6;i++){
+            for (uint8_t j = 0;j < 6;j++){
+                PushFramebuffer(framebuffer,j*16,i*16,(map2[i][j]%9)*16,int(map2[i][j] / 9)*16,16,16);
             }
         }
 
+
         //input
-        if (kbdState.keyDown(EADK::Keyboard::Key::Right)){
+        if (kbdState.keyDown(EADK::Keyboard::Key::Right) and x+16 < 320){
             x++;
         }
-        if (kbdState.keyDown(EADK::Keyboard::Key::Left)){
+        if (kbdState.keyDown(EADK::Keyboard::Key::Left) and x > 0){
             x--;
         }
-        if (kbdState.keyDown(EADK::Keyboard::Key::Up)){
+        if (kbdState.keyDown(EADK::Keyboard::Key::Up) and y > 0){
             y--;
         }
-        if (kbdState.keyDown(EADK::Keyboard::Key::Down)){
+        if (kbdState.keyDown(EADK::Keyboard::Key::Down) and y+16 < 240){
             y++;
         }
         PushFramebuffer(framebuffer,x,y,80,144,16,16); //player update (torch for test)
