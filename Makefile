@@ -14,6 +14,10 @@ src = $(addprefix src/,\
   main.cpp \
 )
 
+HOST_CXX ?= c++
+EMU_CFLAGS = $(shell pkg-config --cflags x11)
+EMU_LIBS = $(shell pkg-config --libs x11)
+
 CPPFLAGS = -std=c++11 -fno-exceptions
 CPPFLAGS += -Os -Wall
 CPPFLAGS += $(shell $(NWLINK) eadk-cflags)
@@ -42,6 +46,13 @@ build: $(BUILD_DIR)/NAME.bin
 run: $(BUILD_DIR)/NAME.nwa
 	@echo "INSTALL $<"
 	$(Q) $(NWLINK) install-nwa $<
+
+.PHONY: emu
+emu: $(BUILD_DIR)/emulator
+
+$(BUILD_DIR)/emulator: src/main.cpp emu/eadk_x11.cpp | $(BUILD_DIR)
+	@echo "EMU     $@"
+	$(Q) $(HOST_CXX) -std=c++11 -O2 -Wall -Isrc $(EMU_CFLAGS) src/main.cpp emu/eadk_x11.cpp -o $@ $(EMU_LIBS)
 
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.nwa
 	@echo "BIN     $@"
